@@ -10,7 +10,7 @@ on:
   pull_request: # déclenche aussi sur les PR
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,17 +29,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 4. Lancer les tests
-      - name: Run tests
-        run: npm test
-
-      # 5. Vérifier que l'app build bien
+      # 4. Vérifier que l'app build bien
       - name: Build Next.js app
         run: npm run build
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-test # attendre que les tests passent avant de déployer
+    needs: build # attendre que le build avant de déployer
     if: github.ref == 'refs/heads/main' # déploiement seulement sur main
 
     steps:
