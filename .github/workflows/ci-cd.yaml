@@ -1,9 +1,5 @@
 name: CI/CD
 on: [push]
-env:
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 jobs:
   build:
     name: Build and Deploy
@@ -33,9 +29,9 @@ jobs:
       - name: Install vercel Cli
         run: npm install --global vercel@latest
       - name: Pull Vercel Enviromental Variables
-        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN_ID }}
       - name: Trigger Vercel Deployment
-        run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN_ID }}
   Deploy-Prodcution:
     name: Deploy to Vercel (Production)
     needs: build
@@ -50,6 +46,6 @@ jobs:
       - name: Install vercel Cli
         run: npm install --global vercel@latest
       - name: Pull Vercel Environmental Variables
-        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN_ID }}
       - name: Trigger Vercel Deployment
-        run: vercel deploy --prod --no-wait --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --no-wait --token=${{ secrets.VERCEL_TOKEN_ID }}
