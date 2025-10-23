@@ -5,7 +5,6 @@ jobs:
   Deploy-Dev:
     name: Deploy to Vercel (Development)
 
-    needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
     steps:
