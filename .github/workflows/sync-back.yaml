@@ -1,0 +1,33 @@
+name: Sync Front to Monorepo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout FRONT repo
+        uses: actions/checkout@v4
+
+      - name: Clone monorepo
+        run: |
+          git clone https://clemgi0:${{ secrets.GH_PAT }}@github.com/clemgi0/fleetguard360_fabrica-escuela-2025-2_integration.git monorepo
+
+      - name: Replace front folder in monorepo
+        run: |
+          rm -rf monorepo/front
+          mkdir -p monorepo/front
+          cp -R . monorepo/front/
+
+      - name: Commit & Push changes
+        run: |
+          cd monorepo
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "🔄 Sync front from my-next-lab" || echo "No changes"
+          git push
