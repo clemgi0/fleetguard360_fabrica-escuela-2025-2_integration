@@ -6,6 +6,7 @@ jobs:
     name: Deploy to Vercel (Development)
 
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
     steps:
       - uses: actions/checkout@v3
 
@@ -18,7 +19,7 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Enviromental Variables
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN_ID }}
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN_ID }}
 
       - name: Trigger Vercel Deployment
-        run: vercel deploy --no-wait --environment=production --token=${{ secrets.VERCEL_TOKEN_ID }}
+        run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN_ID }}
