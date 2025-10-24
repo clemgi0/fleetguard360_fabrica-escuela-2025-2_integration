@@ -2,11 +2,11 @@ name: CI/CD
 on: [push]
 
 jobs:
-  Deploy-Dev:
-    name: Deploy to Vercel (Development)
+  Deploy-Production:
+    name: Deploy to Vercel (Production)
 
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
 
