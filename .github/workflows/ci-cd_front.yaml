@@ -46,4 +46,4 @@ jobs:
 
       - name: Trigger Vercel Deployment
         working-directory: ./front
-        run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN_ID }}
+        run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN_ID }} --name FleetGuard360-Front
