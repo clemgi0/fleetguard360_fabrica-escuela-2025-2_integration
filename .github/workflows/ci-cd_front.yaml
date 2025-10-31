@@ -16,11 +16,11 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: |
-          cd /front
-          npm install
+        working-directory: ./front
+        run: npm install
 
       - name: Build project
+        working-directory: ./front
         run: npm run build
 
   Deploy-Production:
@@ -41,7 +41,9 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Enviromental Variables
+        working-directory: ./front
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN_ID }}
 
       - name: Trigger Vercel Deployment
+        working-directory: ./front
         run: vercel deploy --no-wait --token=${{ secrets.VERCEL_TOKEN_ID }}
