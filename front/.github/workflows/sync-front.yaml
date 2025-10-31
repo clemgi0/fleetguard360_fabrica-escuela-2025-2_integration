@@ -1,0 +1,56 @@
+name: Sync Front to Monorepo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Syncronize-Front-to-Monorepo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout FRONT repo
+        uses: actions/checkout@v4
+        # par défaut checkout va dans $GITHUB_WORKSPACE
+
+      - name: Clone monorepo (outside workspace)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          # clone outside of the workspace to avoid recursion when copying .
+          rm -rf /tmp/monorepo
+          git clone https://clemgi0:${GH_PAT}@github.com/clemgi0/fleetguard360_fabrica-escuela-2025-2_integration.git /tmp/monorepo
+          ls -la /tmp/monorepo
+
+      - name: Replace front folder in monorepo (rsync)
+        run: |
+          # remove old front and ensure folder exists
+          rm -rf /tmp/monorepo/front
+          mkdir -p /tmp/monorepo/front
+
+          # sync current repo into monorepo/front
+          # -a : archive, --delete : remove files deleted in source
+          # exclude .git to avoid copying the front repo's .git folder into the monorepo
+          rsync -a --delete --exclude='.git' --exclude='/tmp/monorepo' ./ /tmp/monorepo/front/
+
+      - name: Commit & Push changes if any
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          cd /tmp/monorepo
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          # show what changed for debugging
+          git status --porcelain || true
+          git add -A
+
+          # commit only if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🔄 Sync front from FleetGuard360_FE20252 (workflow)"
+            # push using token (already in origin remote but we force url auth to be safe)
+            git push https://clemgi0:${GH_PAT}@github.com/clemgi0/fleetguard360_fabrica-escuela-2025-2_integration.git HEAD:main
+          fi
