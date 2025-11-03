@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Layout } from "@/components/layout/Layout";
-import { Truck, User, Lock, Eye, EyeOff } from "lucide-react";
+import { Truck, Lock, Eye, EyeOff, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { login, verifyCode } from "@/services/authService";
+import { setCookie } from "@/utils/cookies";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,21 +26,43 @@ export default function Login() {
     setError("");
     
     if (!formData.username || !formData.password) {
-      setError("Usuario o contraseña incorrectos. Verifique sus datos.");
+      setError("Por favor ingrese correo y contraseña.");
       return;
     }
     
     setIsLoading(true);
     
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Sesión iniciada exitosamente",
-        description: "Bienvenido a Momentum Fleet",
+    try {
+      const loginResponse = await login({
+        correo: formData.username,
+        password: formData.password
       });
+      
+      // Automáticamente verificamos el código recibido
+      const verifyResponse = await verifyCode({
+        correo: formData.username,
+        codigo: loginResponse.codigo
+      });
+      
+      setCookie(verifyResponse.token);
+      setIsLoading(false);
+      
+      toast({
+        title: "Autenticación exitosa",
+        description: verifyResponse.mensaje || "Bienvenido a Momentum Fleet",
+      });
+      
       navigate("/dashboard");
-    }, 1000);
+    } catch (error) {
+      setIsLoading(false);
+      const errorMessage = error instanceof Error ? error.message : "Error al iniciar sesión";
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -63,20 +87,20 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-card-foreground font-medium">
-                  Usuario
+                  Correo Electrónico
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <Input
                     id="username"
-                    type="text"
-                    placeholder="juan.conductor"
+                    type="email"
+                    placeholder="usuario@ejemplo.com"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className="pl-10 bg-input border-border"
                     aria-describedby={error ? "login-error" : undefined}
                     aria-invalid={error ? "true" : "false"}
-                    autoComplete="username"
+                    autoComplete="email"
                     required
                   />
                 </div>

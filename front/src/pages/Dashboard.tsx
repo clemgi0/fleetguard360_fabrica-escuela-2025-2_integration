@@ -1,12 +1,40 @@
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Edit, Trash2, Route, Users } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Route, Users, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getConductores } from "@/services/driverService";
+import { getRutas } from "@/services/routeService";
 
 export default function Dashboard() {
+  const [activeRoutes, setActiveRoutes] = useState(0);
+  const [totalDrivers, setTotalDrivers] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      const [rutas, conductores] = await Promise.all([
+        getRutas(),
+        getConductores()
+      ]);
+      
+      setActiveRoutes(rutas.length);
+      setTotalDrivers(conductores.length);
+    } catch (error) {
+      console.error('Error al cargar datos del dashboard:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Layout showLogin={false}>
       <div className="space-y-8">
@@ -30,10 +58,18 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">5</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Rutas en operación
-              </p>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                </div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-foreground">{activeRoutes}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Rutas en operación
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -45,10 +81,18 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">12</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Conductores registrados
-              </p>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                </div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-foreground">{totalDrivers}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Conductores registrados
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

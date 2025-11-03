@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,39 +6,56 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CreateDriverModal } from "@/components/modals/CreateDriverModal";
 import { EditDriverModal } from "@/components/modals/EditDriverModal";
-import { Search, Plus, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { Search, Plus, Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const drivers = [
-  { id: "12345678", username: "john.martinez", email: "john.martinez@email.com" },
-  { id: "87654321", username: "sofia.chen", email: "sofia.chen@email.com" },
-  { id: "11223344", username: "maria.rodriguez", email: "maria.rodriguez@email.com" },
-  { id: "55667788", username: "carlos.lopez", email: "carlos.lopez@email.com" },
-  { id: "99887766", username: "ana.gutierrez", email: "ana.gutierrez@email.com" },
-];
+import { getConductores, Conductor } from "@/services/driverService";
 
 export default function Drivers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState<typeof drivers[0] | undefined>();
+  const [selectedDriver, setSelectedDriver] = useState<Conductor | undefined>();
+  const [drivers, setDrivers] = useState<Conductor[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    loadDrivers();
+  }, []);
+
+  const loadDrivers = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getConductores();
+      setDrivers(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al cargar conductores",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredDrivers = drivers.filter(driver =>
-    driver.id.includes(searchTerm) ||
-    driver.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.email.toLowerCase().includes(searchTerm.toLowerCase())
+    driver.id.toString().includes(searchTerm) ||
+    driver.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    driver.usuario.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    driver.licencia.includes(searchTerm) ||
+    driver.telefono.includes(searchTerm)
   );
 
-  const handleEdit = (driver: typeof drivers[0]) => {
+  const handleEdit = (driver: Conductor) => {
     setSelectedDriver(driver);
     setEditModalOpen(true);
   };
 
-  const handleDelete = (driverId: string, username: string) => {
+  const handleDelete = (driverId: number, nombre: string) => {
     toast({
       title: "Conductor eliminado",
-      description: `El conductor ${username} ha sido eliminado del sistema.`,
+      description: `El conductor ${nombre} ha sido eliminado del sistema.`,
       variant: "destructive",
     });
   };
@@ -92,16 +109,27 @@ export default function Drivers() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="font-semibold text-foreground">CÉDULA</TableHead>
-                <TableHead className="font-semibold text-foreground">USUARIO</TableHead>
+                <TableHead className="font-semibold text-foreground">ID</TableHead>
+                <TableHead className="font-semibold text-foreground">NOMBRE COMPLETO</TableHead>
+                <TableHead className="font-semibold text-foreground">LICENCIA</TableHead>
+                <TableHead className="font-semibold text-foreground">TELÉFONO</TableHead>
                 <TableHead className="font-semibold text-foreground">CORREO</TableHead>
                 <TableHead className="font-semibold text-foreground text-right">ACCIONES</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDrivers.length === 0 ? (
+              {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="flex justify-center items-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <span className="text-muted-foreground">Cargando conductores...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredDrivers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     {searchTerm ? "No se encontraron conductores que coincidan con tu búsqueda." : "No hay conductores registrados."}
                   </TableCell>
                 </TableRow>
@@ -109,8 +137,10 @@ export default function Drivers() {
                 filteredDrivers.map((driver) => (
                   <TableRow key={driver.id} className="hover:bg-muted/20">
                     <TableCell className="font-medium text-foreground">{driver.id}</TableCell>
-                    <TableCell className="text-foreground">{driver.username}</TableCell>
-                    <TableCell className="text-foreground">{driver.email}</TableCell>
+                    <TableCell className="text-foreground">{driver.nombreCompleto}</TableCell>
+                    <TableCell className="text-foreground">{driver.licencia}</TableCell>
+                    <TableCell className="text-foreground">{driver.telefono}</TableCell>
+                    <TableCell className="text-foreground">{driver.usuario.correo}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         <Button
@@ -118,7 +148,7 @@ export default function Drivers() {
                           size="sm"
                           className="border-border text-foreground hover:bg-muted"
                           onClick={() => handleEdit(driver)}
-                          aria-label={`Editar conductor ${driver.username}`}
+                          aria-label={`Editar conductor ${driver.nombreCompleto}`}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
@@ -130,7 +160,7 @@ export default function Drivers() {
                               variant="outline"
                               size="sm"
                               className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                              aria-label={`Eliminar conductor ${driver.username}`}
+                              aria-label={`Eliminar conductor ${driver.nombreCompleto}`}
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
                               Eliminar
@@ -147,7 +177,7 @@ export default function Drivers() {
                                 </AlertDialogTitle>
                               </div>
                               <AlertDialogDescription className="text-muted-foreground">
-                                ¿Desea eliminar el conductor {driver.username}?
+                                ¿Desea eliminar el conductor {driver.nombreCompleto}?
                                 <br />
                                 <span className="text-destructive font-medium">
                                   Esta acción no se puede deshacer.
@@ -159,7 +189,7 @@ export default function Drivers() {
                                 Cancelar
                               </AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(driver.id, driver.username)}
+                                onClick={() => handleDelete(driver.id, driver.nombreCompleto)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
                                 Eliminar
@@ -188,16 +218,20 @@ export default function Drivers() {
         open={createModalOpen} 
         onOpenChange={setCreateModalOpen}
         onDriverCreated={() => {
-          // Refresh driver list here if needed
+          loadDrivers();
         }}
       />
       
       <EditDriverModal 
         open={editModalOpen} 
         onOpenChange={setEditModalOpen}
-        driver={selectedDriver}
+        driver={selectedDriver ? {
+          id: selectedDriver.id.toString(),
+          username: selectedDriver.nombreCompleto,
+          email: selectedDriver.usuario.correo
+        } : undefined}
         onDriverUpdated={() => {
-          // Refresh driver list here if needed
+          loadDrivers();
         }}
       />
     </Layout>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,35 +6,53 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CreateRouteModal } from "@/components/modals/CreateRouteModal";
 import { EditRouteModal } from "@/components/modals/EditRouteModal";
-import { Search, Plus, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { Search, Plus, Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const routes = [
-  { id: "R001", name: "Ruta Norte", description: "Servicios al sector norte de la ciudad" },
-  { id: "R002", name: "Ruta Sur", description: "Conexión con municipios del sur" },
-  { id: "R003", name: "Ruta Centro", description: "Transporte urbano zona centro" },
-  { id: "R004", name: "Ruta Este", description: "Servicios zona industrial este" },
-  { id: "R005", name: "Ruta Oeste", description: "Conexión occidental metropolitana" },
-];
+import { getRutas, Ruta } from "@/services/routeService";
 
 export default function Routes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState<typeof routes[0] | undefined>();
+  const [selectedRoute, setSelectedRoute] = useState<Ruta | undefined>();
+  const [routes, setRoutes] = useState<Ruta[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    loadRoutes();
+  }, []);
+
+  const loadRoutes = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getRutas();
+      setRoutes(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al cargar rutas",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredRoutes = routes.filter(route =>
-    route.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.name.toLowerCase().includes(searchTerm.toLowerCase())
+    route.id.toString().includes(searchTerm) ||
+    route.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    route.origen.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    route.destino.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    route.duracionEnMinutos.toString().includes(searchTerm)
   );
 
-  const handleEdit = (route: typeof routes[0]) => {
+  const handleEdit = (route: Ruta) => {
     setSelectedRoute(route);
     setEditModalOpen(true);
   };
 
-  const handleDelete = (routeId: string, routeName: string) => {
+  const handleDelete = (routeId: number, routeName: string) => {
     toast({
       title: "Ruta eliminada",
       description: `La ruta ${routeId} - ${routeName} ha sido eliminada del sistema.`,
@@ -91,15 +109,27 @@ export default function Routes() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="font-semibold text-foreground">CÓDIGO</TableHead>
-                <TableHead className="font-semibold text-foreground">NOMBRE DE LA RUTA</TableHead>
+                <TableHead className="font-semibold text-foreground">ID</TableHead>
+                <TableHead className="font-semibold text-foreground">NOMBRE</TableHead>
+                <TableHead className="font-semibold text-foreground">ORIGEN</TableHead>
+                <TableHead className="font-semibold text-foreground">DESTINO</TableHead>
+                <TableHead className="font-semibold text-foreground">DURACIÓN (MIN)</TableHead>
                 <TableHead className="font-semibold text-foreground text-right">ACCIONES</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRoutes.length === 0 ? (
+              {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="flex justify-center items-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <span className="text-muted-foreground">Cargando rutas...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredRoutes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     {searchTerm ? "No se encontraron rutas que coincidan con tu búsqueda." : "No hay rutas registradas."}
                   </TableCell>
                 </TableRow>
@@ -107,7 +137,10 @@ export default function Routes() {
                 filteredRoutes.map((route) => (
                   <TableRow key={route.id} className="hover:bg-muted/20">
                     <TableCell className="font-medium text-foreground">{route.id}</TableCell>
-                    <TableCell className="text-foreground">{route.name}</TableCell>
+                    <TableCell className="text-foreground">{route.nombre}</TableCell>
+                    <TableCell className="text-foreground">{route.origen}</TableCell>
+                    <TableCell className="text-foreground">{route.destino}</TableCell>
+                    <TableCell className="text-foreground">{route.duracionEnMinutos}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         <Button
@@ -115,7 +148,7 @@ export default function Routes() {
                           size="sm"
                           className="border-border text-foreground hover:bg-muted"
                           onClick={() => handleEdit(route)}
-                          aria-label={`Editar ruta ${route.id} - ${route.name}`}
+                          aria-label={`Editar ruta ${route.id} - ${route.nombre}`}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
@@ -127,7 +160,7 @@ export default function Routes() {
                               variant="outline"
                               size="sm"
                               className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                              aria-label={`Eliminar ruta ${route.id} - ${route.name}`}
+                              aria-label={`Eliminar ruta ${route.id} - ${route.nombre}`}
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
                               Eliminar
@@ -144,7 +177,7 @@ export default function Routes() {
                                 </AlertDialogTitle>
                               </div>
                               <AlertDialogDescription className="text-muted-foreground">
-                                ¿Desea eliminar la ruta {route.id} - {route.name}?
+                                ¿Desea eliminar la ruta {route.id} - {route.nombre}?
                                 <br />
                                 <span className="text-destructive font-medium">
                                   Esta acción no se puede deshacer.
@@ -156,7 +189,7 @@ export default function Routes() {
                                 Cancelar
                               </AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(route.id, route.name)}
+                                onClick={() => handleDelete(route.id, route.nombre)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
                                 Eliminar
@@ -185,16 +218,20 @@ export default function Routes() {
         open={createModalOpen} 
         onOpenChange={setCreateModalOpen}
         onRouteCreated={() => {
-          // Refresh routes list here if needed
+          loadRoutes();
         }}
       />
       
       <EditRouteModal 
         open={editModalOpen} 
         onOpenChange={setEditModalOpen}
-        route={selectedRoute}
+        route={selectedRoute ? {
+          id: selectedRoute.id.toString(),
+          name: selectedRoute.nombre,
+          description: `${selectedRoute.origen} → ${selectedRoute.destino} (${selectedRoute.duracionEnMinutos} min)`
+        } : undefined}
         onRouteUpdated={() => {
-          // Refresh routes list here if needed
+          loadRoutes();
         }}
       />
     </Layout>
