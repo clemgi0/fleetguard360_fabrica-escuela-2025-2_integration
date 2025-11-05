@@ -11,12 +11,14 @@ interface UserMenuProps {
   userName?: string;
   userEmail?: string;
   userAvatar?: string;
+  userRole?: string;
 }
 
 export const UserMenu = ({ 
   userName = "Juan Conductor", 
   userEmail = "juan.conductor@email.com",
-  userAvatar 
+  userAvatar,
+  userRole = "Conductor"
 }: UserMenuProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -92,7 +94,7 @@ export const UserMenu = ({
             </Avatar>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium text-foreground">{userName}</p>
-              <p className="text-xs text-muted-foreground">{userEmail}</p>
+              <p className="text-xs text-muted-foreground">{userRole}</p>
             </div>
           </div>
           

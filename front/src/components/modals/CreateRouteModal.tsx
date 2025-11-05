@@ -3,8 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { getAuthData } from "@/services/api";
+
+const API_BASE_URL = "https://fabricaescuela-2025-2.onrender.com/api";
 
 interface CreateRouteModalProps {
   open: boolean;
@@ -14,122 +16,172 @@ interface CreateRouteModalProps {
 
 export const CreateRouteModal = ({ open, onOpenChange, onRouteCreated }: CreateRouteModalProps) => {
   const [formData, setFormData] = useState({
-    codigo: "",
     nombre: "",
-    descripcion: ""
+    origen: "",
+    destino: "",
+    duracionEnMinutos: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.codigo || !formData.nombre) {
+
+    if (!formData.nombre || !formData.origen || !formData.destino || !formData.duracionEnMinutos) {
       toast({
         title: "Campos requeridos",
-        description: "Por favor complete código y nombre de la ruta.",
+        description: "Por favor complete todos los campos.",
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const authData = getAuthData();
+      const token = authData.token;
+
+      const response = await fetch(`${API_BASE_URL}/rutas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          origen: formData.origen,
+          destino: formData.destino,
+          duracionEnMinutos: parseInt(formData.duracionEnMinutos)
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.mensaje || errorData.message || "Error al crear la ruta");
+      }
+
       toast({
         title: "Ruta creada",
-        description: `La ruta ${formData.codigo} - ${formData.nombre} ha sido creada exitosamente.`,
+        description: `La ruta ${formData.nombre} ha sido creada exitosamente.`,
       });
-      setFormData({ codigo: "", nombre: "", descripcion: "" });
+
+      setFormData({ nombre: "", origen: "", destino: "", duracionEnMinutos: "" });
       onOpenChange(false);
       onRouteCreated?.();
-    }, 1000);
+
+    } catch (error: any) {
+      console.error('Error creando ruta:', error);
+      toast({
+        title: "Error al crear ruta",
+        description: error.message || "No se pudo crear la ruta",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    setFormData({ codigo: "", nombre: "", descripcion: "" });
+    setFormData({ nombre: "", origen: "", destino: "", duracionEnMinutos: "" });
     onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border max-w-md" aria-describedby="create-route-description">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-foreground">
-            Crear nueva ruta
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div id="create-route-description" className="sr-only">
-          Formulario para crear una nueva ruta de transporte
-        </div>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="bg-card border-border max-w-md" aria-describedby="create-route-description">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-foreground">
+              Crear nueva ruta
+            </DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="route-codigo" className="text-foreground font-medium">
-              Código de ruta <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="route-codigo"
-              type="text"
-              placeholder="Ej: R006"
-              value={formData.codigo}
-              onChange={(e) => setFormData({ ...formData, codigo: e.target.value })}
-              className="bg-input border-border"
-              required
-            />
+          <div id="create-route-description" className="sr-only">
+            Formulario para crear una nueva ruta de transporte
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="route-nombre" className="text-foreground font-medium">
-              Nombre de la ruta <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="route-nombre"
-              type="text"
-              placeholder="Ej: Ruta Metropolitana"
-              value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              className="bg-input border-border"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="route-nombre" className="text-foreground font-medium">
+                Nombre de la ruta <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                  id="route-nombre"
+                  type="text"
+                  placeholder="Ej: Ruta Norte"
+                  value={formData.nombre}
+                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  className="bg-input border-border"
+                  required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="route-descripcion" className="text-foreground font-medium">
-              Descripción
-            </Label>
-            <Textarea
-              id="route-descripcion"
-              placeholder="Descripción de la ruta (opcional)"
-              value={formData.descripcion}
-              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-              className="bg-input border-border min-h-[80px] resize-none"
-              rows={3}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="route-origen" className="text-foreground font-medium">
+                Origen <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                  id="route-origen"
+                  type="text"
+                  placeholder="Ej: Terminal Norte"
+                  value={formData.origen}
+                  onChange={(e) => setFormData({ ...formData, origen: e.target.value })}
+                  className="bg-input border-border"
+                  required
+              />
+            </div>
 
-          <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              className="flex-1 border-border text-foreground hover:bg-muted"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground"
-            >
-              {isLoading ? "Creando..." : "Crear Ruta"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="route-destino" className="text-foreground font-medium">
+                Destino <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                  id="route-destino"
+                  type="text"
+                  placeholder="Ej: Centro"
+                  value={formData.destino}
+                  onChange={(e) => setFormData({ ...formData, destino: e.target.value })}
+                  className="bg-input border-border"
+                  required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="route-duracion" className="text-foreground font-medium">
+                Duración (minutos) <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                  id="route-duracion"
+                  type="number"
+                  min="1"
+                  placeholder="Ej: 45"
+                  value={formData.duracionEnMinutos}
+                  onChange={(e) => setFormData({ ...formData, duracionEnMinutos: e.target.value })}
+                  className="bg-input border-border"
+                  required
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1 border-border text-foreground hover:bg-muted"
+                  disabled={isLoading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground"
+              >
+                {isLoading ? "Creando..." : "Crear Ruta"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
   );
 };

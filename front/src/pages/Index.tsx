@@ -29,7 +29,7 @@ const Index = () => {
               asChild 
               className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-6 text-lg"
             >
-              <Link to="/login">Acceder al Sistema</Link>
+              <Link to="/driver-notifications">Acceder al Sistema</Link>
             </Button>
             <Button 
               size="lg" 
@@ -167,7 +167,7 @@ const Index = () => {
             asChild 
             className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-6 text-lg"
           >
-            <Link to="/login">Comenzar Ahora</Link>
+            <Link to="/driver-notifications">Comenzar Ahora</Link>
           </Button>
         </section>
       </div>

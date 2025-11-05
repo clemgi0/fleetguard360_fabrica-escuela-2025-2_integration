@@ -10,6 +10,12 @@ interface HeaderProps {
 export const Header = ({ showLogin = true }: HeaderProps) => {
   const location = useLocation();
   const isLoggedIn = !showLogin || !["/", "/login"].includes(location.pathname);
+  
+  // Simular rol basado en la ruta actual
+  const isDriverRoute = location.pathname.includes('/driver');
+  const userRole = isDriverRoute ? 'Conductor' : 'Administrador';
+  const userName = isDriverRoute ? 'Juan Pérez' : 'Admin Principal';
+  
   return (
     <header className="bg-card border-b border-border px-6 py-4" role="banner">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -35,7 +41,7 @@ export const Header = ({ showLogin = true }: HeaderProps) => {
             <Link to="/login">Login</Link>
           </Button>
         ) : isLoggedIn ? (
-          <UserMenu />
+          <UserMenu userName={userName} userRole={userRole} />
         ) : null}
       </div>
     </header>
