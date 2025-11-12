@@ -1,3 +1,11 @@
+## Repo backend
+
+https://github.com/Camilo-Marsel/FabricaEscuela-2025-2.git
+
+## Repo integration
+
+https://github.com/clemgi0/fleetguard360_fabrica-escuela-2025-2_integration.git
+
 # Welcome to your Lovable project
 
 ## Project info
