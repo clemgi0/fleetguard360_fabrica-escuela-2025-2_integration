@@ -1,6 +1,6 @@
 // frontend/src/services/api.ts
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = __API_BASE_URL__ || 'https://fabricaescuela-2025-2.onrender.com/api';
 
 // Obtener token
 const getToken = (): string | null => localStorage.getItem('token');
@@ -42,7 +42,7 @@ async function fetchAPI<T = any>(
         ...options,
     };
 
-    const response = await fetch(`${API_URL}${endpoint}`, config);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
     if (response.status === 401) {
         clearAuth();

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthData } from "@/services/api";
 
-const API_BASE_URL = "https://fabricaescuela-2025-2.onrender.com/api";
+const API_BASE_URL = __API_BASE_URL__ || 'https://fabricaescuela-2025-2.onrender.com/api';
 
 interface CreateRouteModalProps {
   open: boolean;

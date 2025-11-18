@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { saveAuth } from "@/services/api";
 
-const API_BASE_URL = "https://fabricaescuela-2025-2.onrender.com/api";
+const API_BASE_URL = __API_BASE_URL__ || 'https://fabricaescuela-2025-2.onrender.com/api';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);

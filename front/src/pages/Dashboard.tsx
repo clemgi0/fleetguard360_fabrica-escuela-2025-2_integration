@@ -8,7 +8,7 @@ import { Search, Plus, Edit, Trash2, Route, Users, Clock, Bell } from "lucide-re
 import { getAuthData } from "@/services/api";
 import { Link } from "react-router-dom";
 
-const API_BASE_URL = "https://fabricaescuela-2025-2.onrender.com/api";
+const API_BASE_URL = __API_BASE_URL__ || 'https://fabricaescuela-2025-2.onrender.com/api';
 
 export default function Dashboard() {
   const [rutasActivas, setRutasActivas] = useState<number>(0);

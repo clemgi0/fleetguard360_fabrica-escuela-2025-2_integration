@@ -30,15 +30,15 @@ const App = () => {
       }
     }
 
-    if (!import.meta.env.VITE_API_URL) {
+    if (!__API_BASE_URL__) {
       return;
     }
 
     console.log('🚀 FleetGuard360 Frontend iniciado');
-    console.log('📡 API URL:', import.meta.env.VITE_API_URL);
+    console.log('📡 API URL:', __API_BASE_URL__);
 
     // Verificar si el backend está disponible
-    fetch(`${import.meta.env.VITE_API_URL}/rutas`)
+    fetch(`${__BASE_URL__}/health`)
         .then(res => {
           if (res.ok) {
             console.log('✅ Backend conectado correctamente');
