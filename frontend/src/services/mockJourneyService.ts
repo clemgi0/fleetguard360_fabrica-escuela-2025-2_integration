@@ -58,6 +58,14 @@ class MockJourneyService {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
+<<<<<<< HEAD:frontend/src/services/mockJourneyService.ts
+=======
+    if (this.journey.isActive && !this.journeyStartTimestamp) {
+      const elapsedMinutes = this.journey.workedHours * 60 + this.journey.workedMinutes;
+      this.journeyStartTimestamp = Date.now() - elapsedMinutes * 60 * 1000;
+    }
+
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/mockJourneyService.ts
     if (this.journeyStartTimestamp && this.journey.isActive) {
       const elapsed = Date.now() - this.journeyStartTimestamp;
       const hours = Math.floor(elapsed / (1000 * 60 * 60));

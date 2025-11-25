@@ -1,12 +1,67 @@
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+<<<<<<< HEAD:frontend/src/pages/Dashboard.tsx
 import { Search, Plus, Edit, Trash2, Route, Users, Clock } from "lucide-react";
+=======
+import { Search, Plus, Edit, Trash2, Route, Users, Clock, Bell } from "lucide-react";
+import { getAuthData } from "@/services/api";
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/pages/Dashboard.tsx
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = __API_BASE_URL__ || 'https://fabricaescuela-2025-2.onrender.com/api';
+
 export default function Dashboard() {
+  const [rutasActivas, setRutasActivas] = useState<number>(0);
+  const [conductores, setConductores] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const authData = getAuthData();
+      const token = authData.token;
+
+      // Cargar rutas
+      const rutasResponse = await fetch(`${API_BASE_URL}/rutas`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      if (rutasResponse.ok) {
+        const rutasData = await rutasResponse.json();
+        setRutasActivas(Array.isArray(rutasData) ? rutasData.length : 0);
+      }
+
+      // Cargar conductores
+      const conductoresResponse = await fetch(`${API_BASE_URL}/conductores`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      if (conductoresResponse.ok) {
+        const conductoresData = await conductoresResponse.json();
+        setConductores(Array.isArray(conductoresData) ? conductoresData.length : 0);
+      }
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Layout showLogin={false}>
       <div className="space-y-8">
@@ -30,7 +85,9 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">5</div>
+              <div className="text-2xl font-bold text-foreground">
+                {loading ? "..." : rutasActivas}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Rutas en operación
               </p>
@@ -45,7 +102,9 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">12</div>
+              <div className="text-2xl font-bold text-foreground">
+                {loading ? "..." : conductores}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Conductores registrados
               </p>
@@ -104,7 +163,11 @@ export default function Dashboard() {
                 <Button variant="outline" asChild>
                   <Link to="/routes">
                     <Plus className="h-4 w-4 mr-2" />
+<<<<<<< HEAD:frontend/src/pages/Dashboard.tsx
                       Nueva Ruta
+=======
+                    + Nueva Ruta
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/pages/Dashboard.tsx
                   </Link>
                 </Button>
               </div>
@@ -139,7 +202,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+<<<<<<< HEAD:frontend/src/pages/Dashboard.tsx
 
+=======
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/pages/Dashboard.tsx
           <Card className="border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -149,6 +215,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
+<<<<<<< HEAD:frontend/src/pages/Dashboard.tsx
                 Crea plantillas de turnos y asigna conductores a las rutas.
               </p>
               <div className="flex flex-col gap-2">
@@ -162,6 +229,49 @@ export default function Dashboard() {
                   <Link to="/asignaciones">
                     <Users className="h-4 w-4 mr-2" />
                     Asignar Conductores
+=======
+                Asigna y gestiona los turnos de trabajo de conductores en rutas.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button asChild className="bg-primary hover:bg-primary-hover">
+                  <Link to="/turnos">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Ver Turnos
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/turnos">
+                    <Plus className="h-4 w-4 mr-2" />
+                    + Asignar Turno
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
+                Notificaciones de Jornada
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Consulta y gestiona las alertas configuradas para los conductores en tiempo real.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button asChild className="flex-1 min-w-0 bg-primary hover:bg-primary-hover">
+                  <Link to="/driver-notifications" className="flex items-center gap-2 truncate">
+                    <Bell className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                    <span className="truncate">Ver Notificaciones</span>
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="flex-1 min-w-0">
+                  <Link to="/driver-dashboard" className="flex items-center gap-2 truncate">
+                    <Clock className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                    <span className="truncate">Ir al Panel de Conductor</span>
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/pages/Dashboard.tsx
                   </Link>
                 </Button>
               </div>

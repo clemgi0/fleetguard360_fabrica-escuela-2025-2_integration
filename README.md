@@ -1,4 +1,13 @@
+<<<<<<< HEAD
 # Etiquetas de calidad
+=======
+## Repo backend
+https://github.com/Camilo-Marsel/FabricaEscuela-2025-2.git
+## Repo frontend
+https://github.com/juanfes517/FleetGuard360_FE20252
+
+# FleetGuard360 — Integration Monorepo
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)

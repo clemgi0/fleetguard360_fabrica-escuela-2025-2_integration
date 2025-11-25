@@ -1,4 +1,5 @@
 // frontend/src/services/api.ts
+<<<<<<< HEAD:frontend/src/services/api.ts
 // Cliente HTTP para conectar con el backend de FleetGuard360
 // Importar tipos desde otros servicios
 import type { AsignacionTurno } from './asignacionesService';
@@ -11,24 +12,42 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const getToken = (): string | null => localStorage.getItem('token');
 
+=======
+
+const API_BASE_URL = __API_BASE_URL__ || 'https://fabricaescuela-2025-2.onrender.com/api';
+
+// Obtener token
+const getToken = (): string | null => localStorage.getItem('token');
+
+// Guardar auth
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
 export const saveAuth = (token: string, correo: string, rol: string) => {
     localStorage.setItem('token', token);
     localStorage.setItem('correo', correo);
     localStorage.setItem('rol', rol);
 };
 
+<<<<<<< HEAD:frontend/src/services/api.ts
+=======
+// Limpiar auth
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
 export const clearAuth = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('correo');
     localStorage.removeItem('rol');
 };
 
+<<<<<<< HEAD:frontend/src/services/api.ts
+=======
+// Obtener datos de auth
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
 export const getAuthData = () => ({
     token: localStorage.getItem('token'),
     correo: localStorage.getItem('correo'),
     rol: localStorage.getItem('rol'),
 });
 
+<<<<<<< HEAD:frontend/src/services/api.ts
 export const isAuthenticated = (): boolean => !!getToken();
 
 // ========================================
@@ -36,6 +55,10 @@ export const isAuthenticated = (): boolean => !!getToken();
 // ========================================
 
 async function fetchAPI<T = unknown>(
+=======
+// Fetch genérico
+async function fetchAPI<T = any>(
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> {
@@ -50,6 +73,7 @@ async function fetchAPI<T = unknown>(
         ...options,
     };
 
+<<<<<<< HEAD:frontend/src/services/api.ts
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
@@ -88,29 +112,64 @@ const api = {
     get: <T = unknown>(endpoint: string) => fetchAPI<T>(endpoint),
 
     post: <T = unknown>(endpoint: string, data?: unknown) =>
+=======
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+    if (response.status === 401) {
+        clearAuth();
+        window.location.href = '/login';
+        throw new Error('Sesión expirada');
+    }
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || error.mensaje || `Error ${response.status}`);
+    }
+
+    return response.json();
+}
+
+// API genérica
+const api = {
+    get: <T = any>(endpoint: string) => fetchAPI<T>(endpoint),
+    post: <T = any>(endpoint: string, data?: any) =>
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
         fetchAPI<T>(endpoint, {
             method: 'POST',
             body: data ? JSON.stringify(data) : undefined,
         }),
+<<<<<<< HEAD:frontend/src/services/api.ts
 
     put: <T = unknown>(endpoint: string, data?: unknown) =>
+=======
+    put: <T = any>(endpoint: string, data?: any) =>
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
         fetchAPI<T>(endpoint, {
             method: 'PUT',
             body: data ? JSON.stringify(data) : undefined,
         }),
+<<<<<<< HEAD:frontend/src/services/api.ts
 
     patch: <T = unknown>(endpoint: string, data?: unknown) =>
+=======
+    patch: <T = any>(endpoint: string, data?: any) =>
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
         fetchAPI<T>(endpoint, {
             method: 'PATCH',
             body: data ? JSON.stringify(data) : undefined,
         }),
+<<<<<<< HEAD:frontend/src/services/api.ts
 
     delete: <T = unknown>(endpoint: string) =>
+=======
+    delete: <T = any>(endpoint: string) =>
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts
         fetchAPI<T>(endpoint, { method: 'DELETE' }),
 };
 
 export default api;
 
+<<<<<<< HEAD:frontend/src/services/api.ts
 // ========================================
 // INTERFACES DE RESPUESTA
 // ========================================
@@ -344,3 +403,51 @@ export const asignacionesAPI = {
 // ========================================
 // EXPORTACIÓN POR DEFECTO
 // ========================================
+=======
+// Exportar APIs específicas
+export const authAPI = {
+    login: (correo: string, password: string) =>
+        api.post('/auth/login', { correo, password }),
+    verify: (correo: string, codigo: string) =>
+        api.post('/auth/verify', { correo, codigo }),
+    validate: () => api.get('/auth/validate'),
+};
+
+export const conductoresAPI = {
+    getAll: () => api.get('/conductores'),
+    getById: (id: number) => api.get(`/conductores/${id}`),
+    create: (data: any) => api.post('/conductores', data),
+    update: (id: number, data: any) => api.put(`/conductores/${id}`, data),
+    delete: (id: number) => api.delete(`/conductores/${id}`),
+};
+
+export const rutasAPI = {
+    getAll: () => api.get('/rutas'),
+    getById: (id: number) => api.get(`/rutas/${id}`),
+    create: (data: any) => api.post('/rutas', data),
+    update: (id: number, data: any) => api.put(`/rutas/${id}`, data),
+    delete: (id: number) => api.delete(`/rutas/${id}`),
+};
+
+export const turnosAPI = {
+    getAll: () => api.get('/turnos'),
+    getByRuta: (rutaId: number) => api.get(`/turnos/ruta/${rutaId}`),
+    getByRutaYSemana: (rutaId: number, semana: number) =>
+        api.get(`/turnos/ruta/${rutaId}/semana/${semana}`),
+    create: (data: any) => api.post('/turnos', data),
+    createAuto: (rutaId: number, horaInicio: string, horaFin: string, numeroSemana: number) =>
+        api.post(`/turnos/auto?rutaId=${rutaId}&horaInicio=${horaInicio}&horaFin=${horaFin}&numeroSemana=${numeroSemana}`),
+    delete: (id: number) => api.delete(`/turnos/${id}`),
+};
+
+export const asignacionesAPI = {
+    getAll: () => api.get('/asignaciones'),
+    getByConductor: (conductorId: number) =>
+        api.get(`/asignaciones/conductor/${conductorId}`),
+    getActivas: () => api.get('/asignaciones/activas'),
+    create: (data: any) => api.post('/asignaciones', data),
+    iniciar: (id: number) => api.patch(`/asignaciones/${id}/iniciar`),
+    finalizar: (id: number) => api.patch(`/asignaciones/${id}/finalizar`),
+    cancelar: (id: number) => api.delete(`/asignaciones/${id}`),
+};
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/services/api.ts

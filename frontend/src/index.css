@@ -1,10 +1,16 @@
+/* Import calendar styles */
+@import './styles/calendar.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< HEAD:frontend/src/index.css
 /* Import calendar styles */
 @import './styles/calendar.css';
 
+=======
+>>>>>>> dfc84cce5568d2c5f0695b52a46ac7f061e52408:front/src/index.css
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
 All colors MUST be HSL.
 */
